@@ -23,6 +23,10 @@ dist-ssr
 *.sln
 *.sw?
 
+# Environment variables
+.env
+.env.local
+
 # Backend
 backend/__pycache__/
 backend/**/__pycache__/

@@ -44,9 +44,16 @@ cd backend
 pip install -r requirements.txt
 ```
 
-2. Place your GGUF model file in `backend/model/` directory
+2. (Optional) Configure environment variables:
+```bash
+cd backend
+cp .env.example .env
+# Edit .env to customize MongoDB URI and CORS settings
+```
 
-3. Ensure MongoDB is running:
+3. Place your GGUF model file in `backend/model/` directory
+
+4. Ensure MongoDB is running:
 ```bash
 # On Linux/Mac
 sudo systemctl start mongod
@@ -55,10 +62,12 @@ sudo systemctl start mongod
 docker run -d -p 27017:27017 --name mongodb mongo
 ```
 
-4. Start the backend server:
+5. Start the backend server:
 ```bash
-cd backend/app
-python main.py
+cd backend
+./start_server.sh
+# Or manually:
+# cd app && python main.py
 ```
 
 The backend will run on `http://localhost:8000`
@@ -70,7 +79,13 @@ The backend will run on `http://localhost:8000`
 npm install
 ```
 
-2. Start the development server:
+2. (Optional) Configure environment variables:
+```bash
+cp .env.example .env
+# Edit .env to customize API URL if needed
+```
+
+3. Start the development server:
 ```bash
 npm run dev
 ```

@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Optional, List
 import json
 from datetime import datetime
+from contextlib import asynccontextmanager
 
 # Setup Rich logging
 console = Console()
@@ -23,41 +24,22 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="FineTuneLLM API")
-
-# CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 # Global variables
 llm_model: Optional[Llama] = None
 mongo_client: Optional[AsyncIOMotorClient] = None
 db = None
 chat_collection = None
 
-# Models
-class ChatMessage(BaseModel):
-    prompt: str
-
-class MessageResponse(BaseModel):
-    id: str
-    user_prompt: str
-    model_response: str
-    timestamp: str
-
-@app.on_event("startup")
-async def startup_event():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
     global llm_model, mongo_client, db, chat_collection
     
     # Connect to MongoDB
     try:
         logger.info("[bold cyan]Connecting to MongoDB...[/bold cyan]", extra={"markup": True})
-        mongo_client = AsyncIOMotorClient("mongodb://localhost:27017/")
+        mongodb_uri = os.getenv("MONGODB_URI", "mongodb://localhost:27017/")
+        mongo_client = AsyncIOMotorClient(mongodb_uri)
         db = mongo_client["finetuneLLM"]
         chat_collection = db["chats"]
         logger.info("[bold green]✓ MongoDB connected successfully[/bold green]", extra={"markup": True})
@@ -71,31 +53,52 @@ async def startup_event():
     if not gguf_files:
         logger.warning("[bold yellow]⚠ No GGUF model files found in model directory[/bold yellow]", extra={"markup": True})
         logger.warning("[bold yellow]Please place a .gguf model file in the backend/model directory[/bold yellow]", extra={"markup": True})
-        return
+    else:
+        model_file = gguf_files[0]
+        logger.info(f"[bold cyan]Loading model: {model_file.name}[/bold cyan]", extra={"markup": True})
+        
+        start_time = time.time()
+        try:
+            llm_model = Llama(
+                model_path=str(model_file),
+                n_ctx=2048,
+                n_threads=4,
+                n_gpu_layers=-1,  # Use GPU if available
+                verbose=False
+            )
+            load_time = time.time() - start_time
+            logger.info(f"[bold green]✓ Model loaded successfully in {load_time:.2f} seconds[/bold green]", extra={"markup": True})
+        except Exception as e:
+            logger.error(f"[bold red]✗ Model loading failed: {e}[/bold red]", extra={"markup": True})
     
-    model_file = gguf_files[0]
-    logger.info(f"[bold cyan]Loading model: {model_file.name}[/bold cyan]", extra={"markup": True})
+    yield
     
-    start_time = time.time()
-    try:
-        llm_model = Llama(
-            model_path=str(model_file),
-            n_ctx=2048,
-            n_threads=4,
-            n_gpu_layers=-1,  # Use GPU if available
-            verbose=False
-        )
-        load_time = time.time() - start_time
-        logger.info(f"[bold green]✓ Model loaded successfully in {load_time:.2f} seconds[/bold green]", extra={"markup": True})
-    except Exception as e:
-        logger.error(f"[bold red]✗ Model loading failed: {e}[/bold red]", extra={"markup": True})
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    global mongo_client
+    # Shutdown
     if mongo_client:
         mongo_client.close()
         logger.info("[bold cyan]MongoDB connection closed[/bold cyan]", extra={"markup": True})
+
+app = FastAPI(title="FineTuneLLM API", lifespan=lifespan)
+
+# CORS middleware - Configure allowed origins in production
+allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173").split(",")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=allowed_origins,
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Models
+class ChatMessage(BaseModel):
+    prompt: str
+
+class MessageResponse(BaseModel):
+    id: str
+    user_prompt: str
+    model_response: str
+    timestamp: str
 
 @app.get("/")
 async def root():
