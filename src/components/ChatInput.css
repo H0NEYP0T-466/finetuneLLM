@@ -1,0 +1,37 @@
+.chat-input-form {
+  padding: 1rem;
+  border-top: 1px solid #333;
+}
+
+.input-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.input-prompt {
+  color: #00ff00;
+  font-weight: bold;
+  font-family: 'Courier New', monospace;
+  font-size: 1rem;
+}
+
+.chat-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-family: 'Courier New', monospace;
+  font-size: 1rem;
+  outline: none;
+  padding: 0.5rem;
+}
+
+.chat-input::placeholder {
+  color: #666;
+}
+
+.chat-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

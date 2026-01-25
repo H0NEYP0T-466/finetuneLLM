@@ -1,0 +1,2 @@
+# Place your .gguf model file here
+# The server will automatically load the first .gguf file found in this directory
