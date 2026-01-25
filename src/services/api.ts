@@ -1,4 +1,4 @@
-import { Message, StatusResponse } from '../types';
+import type { Message, StatusResponse } from '../types';
 
 const API_BASE_URL = 'http://localhost:8000';
 
