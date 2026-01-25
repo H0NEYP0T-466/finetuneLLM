@@ -116,7 +116,7 @@ async def get_status():
 @app.get("/messages", response_model=List[MessageResponse])
 async def get_messages(limit: int = 20):
     """Get last N messages from database"""
-    if not chat_collection:
+    if chat_collection is None:
         raise HTTPException(status_code=503, detail="Database not connected")
     
     try:
@@ -176,7 +176,7 @@ async def chat(message: ChatMessage):
             logger.info(f"[bold blue]Response Time:[/bold blue] [white]{elapsed_time:.2f}s[/white]", extra={"markup": True})
             
             # Save to database
-            if chat_collection:
+            if chat_collection is not None:
                 try:
                     await chat_collection.insert_one({
                         "user_prompt": prompt,
