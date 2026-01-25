@@ -1,73 +1,125 @@
-# React + TypeScript + Vite
+# FineTuneLLM - Terminal Style Chat Interface
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A minimalistic terminal-style chat UI with React+TypeScript frontend and FastAPI backend for local LLM inference.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- 🖥️ Clean terminal-style chat interface with #111 background
+- 🚀 FastAPI backend with local LLM support (GGUF format)
+- 📊 Real-time token streaming
+- 💾 MongoDB chat history storage
+- 🎨 Rich and colorful server logs
+- ⚡ Auto-loads last 20 messages on startup
 
-## React Compiler
+## Prerequisites
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Node.js 18+
+- Python 3.9+
+- MongoDB (running locally on port 27017)
 
-## Expanding the ESLint configuration
+## Project Structure
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```
+finetuneLLM/
+├── src/                    # Frontend source
+│   ├── components/         # React components
+│   ├── services/          # API services
+│   ├── types/             # TypeScript types
+│   └── styles/            # CSS styles
+├── backend/
+│   ├── app/
+│   │   └── main.py        # FastAPI application
+│   ├── model/             # Place .gguf model files here
+│   └── requirements.txt   # Python dependencies
+└── README.md
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Setup Instructions
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Backend Setup
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+1. Install Python dependencies:
+```bash
+cd backend
+pip install -r requirements.txt
 ```
+
+2. Place your GGUF model file in `backend/model/` directory
+
+3. Ensure MongoDB is running:
+```bash
+# On Linux/Mac
+sudo systemctl start mongod
+
+# Or with Docker
+docker run -d -p 27017:27017 --name mongodb mongo
+```
+
+4. Start the backend server:
+```bash
+cd backend/app
+python main.py
+```
+
+The backend will run on `http://localhost:8000`
+
+### Frontend Setup
+
+1. Install dependencies:
+```bash
+npm install
+```
+
+2. Start the development server:
+```bash
+npm run dev
+```
+
+The frontend will run on `http://localhost:5173`
+
+## Usage
+
+1. Start MongoDB
+2. Start the backend server (it will load the LLM model)
+3. Start the frontend development server
+4. Open your browser to `http://localhost:5173`
+5. Start chatting!
+
+## Features in Detail
+
+### Backend
+- Loads GGUF models on server startup
+- Streams tokens in real-time using Server-Sent Events
+- Logs user prompts and model responses with rich formatting
+- Tracks and logs response times
+- Stores all conversations in MongoDB
+
+### Frontend
+- Terminal-style UI with green text on black background (#111)
+- Token-by-token streaming display
+- Loading indicators during model initialization
+- Auto-scroll to latest messages
+- Loads last 20 messages from database on startup
+
+## API Endpoints
+
+- `GET /` - Health check
+- `GET /status` - Check model and database status
+- `GET /messages?limit=20` - Get last N messages
+- `POST /chat` - Send message and stream response
+
+## Development
+
+Build for production:
+```bash
+npm run build
+```
+
+Preview production build:
+```bash
+npm run preview
+```
+
+## License
+
+MIT
