@@ -80,11 +80,9 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="FineTuneLLM API", lifespan=lifespan)
 
-# CORS middleware - Configure allowed origins in production
-allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins,
+    allow_origins=["*"],
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -204,4 +202,4 @@ async def chat(message: ChatMessage):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8002)
