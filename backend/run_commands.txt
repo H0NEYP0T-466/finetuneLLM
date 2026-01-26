@@ -1,1 +1,2 @@
+docker build -t finetune-llm .
 docker run -p 8002:8002 finetune-llm
