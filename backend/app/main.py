@@ -76,9 +76,8 @@ async def lifespan(app: FastAPI):
                 n_threads=4,
                 n_gpu_layers=-1,  # Use GPU if available
                 verbose=False,
-                # Add parameters to prevent repetition and improve quality
+                # Prevents the model from repeating tokens in loops
                 repeat_penalty=1.1,
-                # These help prevent the model from getting stuck
             )
             load_time = time.time() - start_time
             logger.info(f"[bold green]✓ Model loaded successfully in {load_time:.2f} seconds[/bold green]", extra={"markup": True})
