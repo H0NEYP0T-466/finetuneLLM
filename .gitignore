@@ -37,4 +37,5 @@ backend/model/*.bin
 backend/venv/
 backend/env/
 backend/.env
+backend/test_history*.txt
 
