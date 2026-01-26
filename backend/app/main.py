@@ -10,10 +10,11 @@ import logging
 import time
 import os
 from pathlib import Path
-from typing import Optional, List
+from typing import Optional, List, Dict
 import json
 from datetime import datetime
 from contextlib import asynccontextmanager
+from collections import defaultdict
 
 # Setup Rich logging
 console = Console()
@@ -30,6 +31,10 @@ mongo_client: Optional[AsyncIOMotorClient] = None
 db = None
 chat_collection = None
 
+# Store conversation history per session (in-memory for simplicity)
+# Format: {session_id: [{"role": "user/assistant", "content": "..."}]}
+conversation_history: Dict[str, List[Dict[str, str]]] = defaultdict(list)
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
@@ -39,12 +44,18 @@ async def lifespan(app: FastAPI):
     try:
         logger.info("[bold cyan]Connecting to MongoDB...[/bold cyan]", extra={"markup": True})
         mongodb_uri = os.getenv("MONGODB_URI", "mongodb://localhost:27017/")
-        mongo_client = AsyncIOMotorClient(mongodb_uri)
+        mongo_client = AsyncIOMotorClient(mongodb_uri, serverSelectionTimeoutMS=5000)
+        # Test connection
+        await mongo_client.admin.command('ping')
         db = mongo_client["finetuneLLM"]
         chat_collection = db["chats"]
         logger.info("[bold green]✓ MongoDB connected successfully[/bold green]", extra={"markup": True})
     except Exception as e:
-        logger.error(f"[bold red]✗ MongoDB connection failed: {e}[/bold red]", extra={"markup": True})
+        logger.warning(f"[bold yellow]⚠ MongoDB connection failed: {e}[/bold yellow]", extra={"markup": True})
+        logger.warning("[bold yellow]⚠ Continuing without database - chats will not be saved[/bold yellow]", extra={"markup": True})
+        mongo_client = None
+        db = None
+        chat_collection = None
     
     # Load LLM model
     model_path = Path(__file__).parent.parent / "model"
@@ -64,7 +75,9 @@ async def lifespan(app: FastAPI):
                 n_ctx=2048,
                 n_threads=4,
                 n_gpu_layers=-1,  # Use GPU if available
-                verbose=False
+                verbose=False,
+                # Prevents the model from repeating tokens in loops
+                repeat_penalty=1.1,
             )
             load_time = time.time() - start_time
             logger.info(f"[bold green]✓ Model loaded successfully in {load_time:.2f} seconds[/bold green]", extra={"markup": True})
@@ -91,6 +104,7 @@ app.add_middleware(
 # Models
 class ChatMessage(BaseModel):
     prompt: str
+    session_id: Optional[str] = "default"  # Allow session tracking
 
 class MessageResponse(BaseModel):
     id: str
@@ -112,6 +126,26 @@ async def get_status():
         "model_loaded": llm_model is not None,
         "database_connected": mongo_client is not None
     }
+
+def format_chat_prompt(history: List[Dict[str, str]], new_message: str) -> str:
+    """
+    Format conversation history into a proper chat prompt.
+    This helps the model understand the context and provide coherent responses.
+    """
+    # System instruction to guide the model's behavior
+    prompt = "You are a helpful AI assistant. Provide clear, concise, and relevant responses.\n\n"
+    
+    # Add conversation history
+    for msg in history:
+        if msg["role"] == "user":
+            prompt += f"User: {msg['content']}\n"
+        elif msg["role"] == "assistant":
+            prompt += f"Assistant: {msg['content']}\n"
+    
+    # Add current user message
+    prompt += f"User: {new_message}\nAssistant:"
+    
+    return prompt
 
 @app.get("/messages", response_model=List[MessageResponse])
 async def get_messages(limit: int = 20):
@@ -139,53 +173,93 @@ async def get_messages(limit: int = 20):
         logger.error(f"[bold red]Error fetching messages: {e}[/bold red]", extra={"markup": True})
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.post("/clear-history")
+async def clear_history(session_id: str = "default"):
+    """Clear conversation history for a session"""
+    if session_id in conversation_history:
+        conversation_history[session_id].clear()
+        logger.info(f"[bold cyan]Cleared conversation history for session: {session_id}[/bold cyan]", extra={"markup": True})
+    return {"status": "success", "message": f"Conversation history cleared for session: {session_id}"}
+
 @app.post("/chat")
 async def chat(message: ChatMessage):
-    """Stream chat response token by token"""
+    """Stream chat response token by token with conversation context"""
     if not llm_model:
         raise HTTPException(status_code=503, detail="Model not loaded")
     
-    prompt = message.prompt
-    logger.info(f"[bold magenta]User Prompt:[/bold magenta] [cyan]{prompt}[/cyan]", extra={"markup": True})
+    user_prompt = message.prompt
+    session_id = message.session_id or "default"
+    
+    logger.info(f"[bold magenta]User Prompt:[/bold magenta] [cyan]{user_prompt}[/cyan]", extra={"markup": True})
+    logger.info(f"[bold magenta]Session ID:[/bold magenta] [cyan]{session_id}[/cyan]", extra={"markup": True})
+    
+    # Get conversation history for this session
+    history = conversation_history[session_id]
+    
+    # Format the prompt with conversation context
+    formatted_prompt = format_chat_prompt(history, user_prompt)
+    
+    logger.info(f"[bold cyan]Formatted prompt length:[/bold cyan] [white]{len(formatted_prompt)} chars[/white]", extra={"markup": True})
     
     async def generate():
         full_response = ""
         start_time = time.time()
+        token_count = 0
         
         try:
-            # Stream tokens
+            # Stream tokens with improved parameters
             for output in llm_model(
-                prompt,
+                formatted_prompt,
                 max_tokens=512,
                 temperature=0.7,
                 top_p=0.9,
+                top_k=40,
+                repeat_penalty=1.1,  # Prevent repetition
                 stream=True,
-                stop=["</s>", "User:", "\n\n"]
+                stop=["</s>", "User:", "\nUser:", "Human:", "\nHuman:"]  # Better stop sequences
             ):
                 if "choices" in output and len(output["choices"]) > 0:
                     token = output["choices"][0].get("text", "")
                     if token:
                         full_response += token
+                        token_count += 1
                         yield f"data: {json.dumps({'token': token})}\n\n"
             
             # Send completion signal
             elapsed_time = time.time() - start_time
+            tokens_per_sec = token_count / elapsed_time if elapsed_time > 0 else 0
+            
             yield f"data: {json.dumps({'done': True})}\n\n"
+            
+            # Clean up the response (remove any trailing whitespace)
+            full_response = full_response.strip()
             
             logger.info(f"[bold green]Model Response:[/bold green] [yellow]{full_response}[/yellow]", extra={"markup": True})
             logger.info(f"[bold blue]Response Time:[/bold blue] [white]{elapsed_time:.2f}s[/white]", extra={"markup": True})
+            logger.info(f"[bold blue]Tokens Generated:[/bold blue] [white]{token_count} ({tokens_per_sec:.2f} tokens/s)[/white]", extra={"markup": True})
             
-            # Save to database
+            # Update conversation history
+            conversation_history[session_id].append({"role": "user", "content": user_prompt})
+            conversation_history[session_id].append({"role": "assistant", "content": full_response})
+            
+            # Keep only last 10 exchanges (20 messages) to prevent context from getting too long
+            if len(conversation_history[session_id]) > 20:
+                conversation_history[session_id] = conversation_history[session_id][-20:]
+            
+            # Save to database if available
             if chat_collection is not None:
                 try:
                     await chat_collection.insert_one({
-                        "user_prompt": prompt,
+                        "session_id": session_id,
+                        "user_prompt": user_prompt,
                         "model_response": full_response,
                         "timestamp": datetime.utcnow().isoformat(),
-                        "response_time": elapsed_time
+                        "response_time": elapsed_time,
+                        "token_count": token_count,
+                        "tokens_per_sec": tokens_per_sec
                     })
                 except Exception as e:
-                    logger.error(f"[bold red]Error saving to database: {e}[/bold red]", extra={"markup": True})
+                    logger.warning(f"[bold yellow]⚠ Could not save to database: {e}[/bold yellow]", extra={"markup": True})
         
         except Exception as e:
             logger.error(f"[bold red]Error generating response: {e}[/bold red]", extra={"markup": True})
