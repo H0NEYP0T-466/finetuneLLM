@@ -36,7 +36,38 @@ finetuneLLM/
 
 ## Setup Instructions
 
-### Backend Setup
+### Option 1: Using Docker Compose (Recommended)
+
+This is the easiest way to run both the backend and MongoDB:
+
+1. Place your GGUF model file in `backend/model/` directory
+
+2. Start all services:
+```bash
+docker-compose up -d
+```
+
+3. Check logs:
+```bash
+docker-compose logs -f backend
+```
+
+4. Stop services:
+```bash
+docker-compose down
+```
+
+The backend will run on `http://localhost:8002` and MongoDB on `localhost:27017`.
+
+**Note:** Using docker-compose ensures:
+- ✅ MongoDB is properly connected (no connection refused errors)
+- ✅ Database `finetuneLLM` is automatically created
+- ✅ Messages are persisted across restarts
+- ✅ Proper networking between services
+
+### Option 2: Manual Setup
+
+#### Backend Setup
 
 1. Install Python dependencies:
 ```bash

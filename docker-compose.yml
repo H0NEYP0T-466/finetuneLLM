@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: finetune-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=finetuneLLM
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    container_name: finetune-backend
+    ports:
+      - "8002:8002"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/
+      # Use mongodb://host.docker.internal:27017/ to connect to MongoDB on host
+      # Use mongodb://mongodb:27017/ to connect to MongoDB in docker network (default)
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    volumes:
+      - ./backend/model:/app/model
+
+volumes:
+  mongodb_data:

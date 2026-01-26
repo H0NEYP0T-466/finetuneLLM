@@ -47,9 +47,22 @@ async def lifespan(app: FastAPI):
         mongo_client = AsyncIOMotorClient(mongodb_uri, serverSelectionTimeoutMS=5000)
         # Test connection
         await mongo_client.admin.command('ping')
+        logger.info("[bold green]✓ MongoDB connection successful[/bold green]", extra={"markup": True})
+        
+        # Check if database exists, create if it doesn't
+        db_list = await mongo_client.list_database_names()
+        if "finetuneLLM" not in db_list:
+            logger.info("[bold cyan]Creating database: finetuneLLM[/bold cyan]", extra={"markup": True})
+        else:
+            logger.info("[bold cyan]Database finetuneLLM already exists[/bold cyan]", extra={"markup": True})
+        
+        # Connect to database and collection
         db = mongo_client["finetuneLLM"]
         chat_collection = db["chats"]
-        logger.info("[bold green]✓ MongoDB connected successfully[/bold green]", extra={"markup": True})
+        
+        # Ensure the collection exists by attempting an operation
+        await chat_collection.count_documents({})
+        logger.info("[bold green]✓ Database and collection ready[/bold green]", extra={"markup": True})
     except Exception as e:
         logger.warning(f"[bold yellow]⚠ MongoDB connection failed: {e}[/bold yellow]", extra={"markup": True})
         logger.warning("[bold yellow]⚠ Continuing without database - chats will not be saved[/bold yellow]", extra={"markup": True})
@@ -132,8 +145,12 @@ def format_chat_prompt(history: List[Dict[str, str]], new_message: str) -> str:
     Format conversation history into a proper chat prompt.
     This helps the model understand the context and provide coherent responses.
     """
-    # System instruction to guide the model's behavior
-    prompt = "You are a helpful AI assistant. Provide clear, concise, and relevant responses.\n\n"
+    # System instruction to guide the model's behavior - strengthened to prevent rambling
+    prompt = """You are a helpful AI assistant. Provide clear, concise, and relevant responses.
+Answer questions directly and briefly. Keep responses focused and under 3 sentences unless specifically asked for more detail.
+Do not generate examples, puzzles, or unrelated content. Stay on topic.
+
+"""
     
     # Add conversation history
     for msg in history:
@@ -207,16 +224,26 @@ async def chat(message: ChatMessage):
         token_count = 0
         
         try:
-            # Stream tokens with improved parameters
+            # Stream tokens with improved parameters to match LM Studio behavior
             for output in llm_model(
                 formatted_prompt,
-                max_tokens=512,
-                temperature=0.7,
+                max_tokens=150,  # Reduced from 512 to prevent rambling
+                temperature=0.5,  # Reduced from 0.7 for more focused responses
                 top_p=0.9,
                 top_k=40,
                 repeat_penalty=1.1,  # Prevent repetition
                 stream=True,
-                stop=["</s>", "User:", "\nUser:", "Human:", "\nHuman:"]  # Better stop sequences
+                # Enhanced stop sequences to prevent hallucination
+                stop=[
+                    "</s>", 
+                    "User:", "\nUser:", 
+                    "Human:", "\nHuman:",
+                    "Question:", "\nQuestion:",
+                    "\n\n\n",  # Stop on multiple newlines
+                    "Example:",  # Stop before generating examples
+                    "Here's an",  # Stop before "Here's an example"
+                    "Let me",  # Stop before "Let me give you an example"
+                ]
             ):
                 if "choices" in output and len(output["choices"]) > 0:
                     token = output["choices"][0].get("text", "")
@@ -233,6 +260,21 @@ async def chat(message: ChatMessage):
             
             # Clean up the response (remove any trailing whitespace)
             full_response = full_response.strip()
+            
+            # Validate and truncate if response is too long (safety check)
+            if len(full_response) > 800:  # characters
+                logger.warning(f"[bold yellow]⚠ Response too long ({len(full_response)} chars), truncating...[/bold yellow]", extra={"markup": True})
+                # Truncate at sentence boundary
+                sentences = full_response.split('. ')
+                if len(sentences) >= 3:
+                    # Keep first 3 sentences and add period only if last sentence doesn't end with punctuation
+                    truncated = '. '.join(sentences[:3])
+                    if not truncated.endswith(('.', '!', '?')):
+                        truncated += '.'
+                    full_response = truncated
+                # If fewer than 3 sentences, just truncate at 800 characters
+                else:
+                    full_response = full_response[:800].rstrip()
             
             logger.info(f"[bold green]Model Response:[/bold green] [yellow]{full_response}[/yellow]", extra={"markup": True})
             logger.info(f"[bold blue]Response Time:[/bold blue] [white]{elapsed_time:.2f}s[/white]", extra={"markup": True})
