@@ -2,7 +2,6 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
-from motor.motor_asyncio import AsyncIOMotorClient
 from llama_cpp import Llama
 from rich.console import Console
 from rich.logging import RichHandler
@@ -15,6 +14,7 @@ import json
 from datetime import datetime
 from contextlib import asynccontextmanager
 from collections import defaultdict
+import aiofiles
 
 # Setup Rich logging
 console = Console()
@@ -27,9 +27,9 @@ logger = logging.getLogger(__name__)
 
 # Global variables
 llm_model: Optional[Llama] = None
-mongo_client: Optional[AsyncIOMotorClient] = None
-db = None
-chat_collection = None
+
+# Path to history file
+HISTORY_FILE = Path(__file__).parent.parent / "history.txt"
 
 # Store conversation history per session (in-memory for simplicity)
 # Format: {session_id: [{"role": "user/assistant", "content": "..."}]}
@@ -38,37 +38,18 @@ conversation_history: Dict[str, List[Dict[str, str]]] = defaultdict(list)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
-    global llm_model, mongo_client, db, chat_collection
+    global llm_model
     
-    # Connect to MongoDB
+    # Ensure history file exists
     try:
-        logger.info("[bold cyan]Connecting to MongoDB...[/bold cyan]", extra={"markup": True})
-        mongodb_uri = os.getenv("MONGODB_URI", "mongodb://localhost:27017/")
-        mongo_client = AsyncIOMotorClient(mongodb_uri, serverSelectionTimeoutMS=5000)
-        # Test connection
-        await mongo_client.admin.command('ping')
-        logger.info("[bold green]✓ MongoDB connection successful[/bold green]", extra={"markup": True})
-        
-        # Check if database exists, create if it doesn't
-        db_list = await mongo_client.list_database_names()
-        if "finetuneLLM" not in db_list:
-            logger.info("[bold cyan]Creating database: finetuneLLM[/bold cyan]", extra={"markup": True})
+        HISTORY_FILE.parent.mkdir(parents=True, exist_ok=True)
+        if not HISTORY_FILE.exists():
+            HISTORY_FILE.touch()
+            logger.info("[bold green]✓ Created history.txt file[/bold green]", extra={"markup": True})
         else:
-            logger.info("[bold cyan]Database finetuneLLM already exists[/bold cyan]", extra={"markup": True})
-        
-        # Connect to database and collection
-        db = mongo_client["finetuneLLM"]
-        chat_collection = db["chats"]
-        
-        # Ensure the collection exists by attempting an operation
-        await chat_collection.count_documents({})
-        logger.info("[bold green]✓ Database and collection ready[/bold green]", extra={"markup": True})
+            logger.info("[bold cyan]history.txt file already exists[/bold cyan]", extra={"markup": True})
     except Exception as e:
-        logger.warning(f"[bold yellow]⚠ MongoDB connection failed: {e}[/bold yellow]", extra={"markup": True})
-        logger.warning("[bold yellow]⚠ Continuing without database - chats will not be saved[/bold yellow]", extra={"markup": True})
-        mongo_client = None
-        db = None
-        chat_collection = None
+        logger.warning(f"[bold yellow]⚠ Could not create history file: {e}[/bold yellow]", extra={"markup": True})
     
     # Load LLM model
     model_path = Path(__file__).parent.parent / "model"
@@ -100,9 +81,7 @@ async def lifespan(app: FastAPI):
     yield
     
     # Shutdown
-    if mongo_client:
-        mongo_client.close()
-        logger.info("[bold cyan]MongoDB connection closed[/bold cyan]", extra={"markup": True})
+    logger.info("[bold cyan]Application shutdown[/bold cyan]", extra={"markup": True})
 
 app = FastAPI(title="FineTuneLLM API", lifespan=lifespan)
 
@@ -130,14 +109,14 @@ async def root():
     return {
         "status": "online",
         "model_loaded": llm_model is not None,
-        "database_connected": mongo_client is not None
+        "history_file": str(HISTORY_FILE)
     }
 
 @app.get("/status")
 async def get_status():
     return {
         "model_loaded": llm_model is not None,
-        "database_connected": mongo_client is not None
+        "history_file": str(HISTORY_FILE)
     }
 
 def format_chat_prompt(history: List[Dict[str, str]], new_message: str) -> str:
@@ -166,25 +145,66 @@ Do not generate examples, puzzles, or unrelated content. Stay on topic.
 
 @app.get("/messages", response_model=List[MessageResponse])
 async def get_messages(limit: int = 20):
-    """Get last N messages from database"""
-    if chat_collection is None:
-        raise HTTPException(status_code=503, detail="Database not connected")
-    
+    """Get last N messages from history file"""
     try:
-        cursor = chat_collection.find().sort("timestamp", -1).limit(limit)
-        messages = await cursor.to_list(length=limit)
+        if not HISTORY_FILE.exists():
+            return []
         
-        # Reverse to get chronological order
-        messages.reverse()
+        messages = []
+        async with aiofiles.open(HISTORY_FILE, 'r') as f:
+            content = await f.read()
+            lines = content.strip().split('\n')
+            
+            # Parse messages from history file
+            # Format: timestamp|session_id|role|content
+            # Note: Content may contain pipe characters, so we split with maxsplit=3
+            for line_num, line in enumerate(lines, 1):
+                if not line.strip():
+                    continue
+                try:
+                    parts = line.split('|', 3)
+                    if len(parts) != 4:
+                        logger.warning(f"[bold yellow]⚠ Malformed line {line_num}: expected 4 parts, got {len(parts)}[/bold yellow]", extra={"markup": True})
+                        continue
+                    
+                    timestamp, session_id, role, content = parts
+                    
+                    # Group user and assistant messages together
+                    if role == "user":
+                        # This is a user message, create a new message entry
+                        messages.append({
+                            "timestamp": timestamp,
+                            "session_id": session_id,
+                            "user_prompt": content,
+                            "model_response": ""
+                        })
+                    elif role == "assistant":
+                        # This is an assistant response
+                        # Try to match with the most recent user message without a response
+                        if messages and messages[-1]["model_response"] == "":
+                            messages[-1]["model_response"] = content
+                        else:
+                            # Orphaned assistant message - log a warning
+                            logger.warning(f"[bold yellow]⚠ Orphaned assistant message at line {line_num}[/bold yellow]", extra={"markup": True})
+                    else:
+                        logger.warning(f"[bold yellow]⚠ Unknown role '{role}' at line {line_num}[/bold yellow]", extra={"markup": True})
+                        
+                except Exception as e:
+                    logger.warning(f"[bold yellow]⚠ Could not parse line {line_num}: {str(e)}[/bold yellow]", extra={"markup": True})
+                    continue
+        
+        # Get last N complete messages (where both user and assistant are present)
+        complete_messages = [msg for msg in messages if msg["user_prompt"] and msg["model_response"]]
+        limited_messages = complete_messages[-limit:] if len(complete_messages) > limit else complete_messages
         
         return [
             MessageResponse(
-                id=str(msg["_id"]),
+                id=f"{msg['timestamp']}_{msg['session_id']}",
                 user_prompt=msg["user_prompt"],
                 model_response=msg["model_response"],
                 timestamp=msg["timestamp"]
             )
-            for msg in messages
+            for msg in limited_messages
         ]
     except Exception as e:
         logger.error(f"[bold red]Error fetching messages: {e}[/bold red]", extra={"markup": True})
@@ -288,20 +308,18 @@ async def chat(message: ChatMessage):
             if len(conversation_history[session_id]) > 20:
                 conversation_history[session_id] = conversation_history[session_id][-20:]
             
-            # Save to database if available
-            if chat_collection is not None:
-                try:
-                    await chat_collection.insert_one({
-                        "session_id": session_id,
-                        "user_prompt": user_prompt,
-                        "model_response": full_response,
-                        "timestamp": datetime.utcnow().isoformat(),
-                        "response_time": elapsed_time,
-                        "token_count": token_count,
-                        "tokens_per_sec": tokens_per_sec
-                    })
-                except Exception as e:
-                    logger.warning(f"[bold yellow]⚠ Could not save to database: {e}[/bold yellow]", extra={"markup": True})
+            # Save to history file
+            try:
+                user_timestamp = datetime.utcnow().isoformat()
+                assistant_timestamp = datetime.utcnow().isoformat()
+                async with aiofiles.open(HISTORY_FILE, 'a') as f:
+                    # Write user message
+                    await f.write(f"{user_timestamp}|{session_id}|user|{user_prompt}\n")
+                    # Write assistant response
+                    await f.write(f"{assistant_timestamp}|{session_id}|assistant|{full_response}\n")
+                logger.info("[bold green]✓ Conversation saved to history.txt[/bold green]", extra={"markup": True})
+            except Exception as e:
+                logger.warning(f"[bold yellow]⚠ Could not save to history file: {e}[/bold yellow]", extra={"markup": True})
         
         except Exception as e:
             logger.error(f"[bold red]Error generating response: {e}[/bold red]", extra={"markup": True})

@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """
-Test script to verify the MongoDB connection and model parameter changes.
+Test script to verify the text-based history system and model parameter changes.
 This can be run without starting the full server.
 """
 
 import asyncio
 from collections import defaultdict
 from typing import Dict, List
+from pathlib import Path
 
 def format_chat_prompt(history: List[Dict[str, str]], new_message: str) -> str:
     """
@@ -97,52 +98,54 @@ def test_parameters():
     print("These changes should match LM Studio behavior")
     print("=" * 70)
 
-async def test_mongodb_connection():
-    """Test MongoDB connection logic"""
+def test_history_file():
+    """Test the history file system"""
     print("\n" + "=" * 70)
-    print("Testing MongoDB Connection Logic")
+    print("Testing History File System")
     print("=" * 70)
     
+    # Create a test history file
+    test_file = Path(__file__).parent / "test_history.txt"
+    
     try:
-        from motor.motor_asyncio import AsyncIOMotorClient
-        import os
+        # Write test data
+        print("\n[Test 1] Writing test data to history file...")
+        with open(test_file, 'w') as f:
+            f.write("2024-01-01T00:00:00|session1|user|Hello\n")
+            f.write("2024-01-01T00:00:00|session1|assistant|Hi there!\n")
+            f.write("2024-01-01T00:00:01|session2|user|What is AI?\n")
+            f.write("2024-01-01T00:00:01|session2|assistant|AI is artificial intelligence.\n")
+        print("✓ PASSED")
         
-        mongodb_uri = os.getenv("MONGODB_URI", "mongodb://localhost:27017/")
-        print(f"\nConnecting to: {mongodb_uri}")
+        # Read and verify
+        print("\n[Test 2] Reading and parsing history file...")
+        with open(test_file, 'r') as f:
+            lines = f.readlines()
         
-        client = AsyncIOMotorClient(mongodb_uri, serverSelectionTimeoutMS=5000)
+        assert len(lines) == 4, f"Expected 4 lines, got {len(lines)}"
         
-        # Test connection
-        await client.admin.command('ping')
-        print("✓ MongoDB connection successful")
+        # Parse first line
+        parts = lines[0].strip().split('|', 3)
+        assert len(parts) == 4, "Line should have 4 parts"
+        timestamp, session_id, role, content = parts
+        assert role == "user", f"Expected 'user', got '{role}'"
+        assert content == "Hello", f"Expected 'Hello', got '{content}'"
+        print("✓ PASSED")
         
-        # Check if database exists
-        db_list = await client.list_database_names()
-        print(f"\nExisting databases: {db_list}")
+        # Cleanup
+        test_file.unlink()
+        print("\n[Test 3] Cleanup test file")
+        print("✓ PASSED")
         
-        if "finetuneLLM" not in db_list:
-            print("✗ Database 'finetuneLLM' does not exist yet")
-            print("  (It will be created automatically when first document is inserted)")
-        else:
-            print("✓ Database 'finetuneLLM' exists")
+        print("\n" + "=" * 70)
+        print("All history file tests PASSED! ✓")
+        print("=" * 70)
         
-        # Connect to database
-        db = client["finetuneLLM"]
-        chat_collection = db["chats"]
-        
-        # Check collection
-        count = await chat_collection.count_documents({})
-        print(f"✓ Collection 'chats' has {count} documents")
-        
-        client.close()
-        print("\n✓ MongoDB test PASSED")
-        
-    except ImportError:
-        print("⚠ motor not installed - skipping MongoDB test")
     except Exception as e:
-        print(f"⚠ MongoDB connection failed: {e}")
-        print("  This is expected if MongoDB is not running")
-        print("  The application will work without MongoDB (in-memory mode)")
+        print(f"✗ FAILED: {e}")
+        if test_file.exists():
+            test_file.unlink()
+        raise
 
 def main():
     """Run all tests"""
@@ -159,12 +162,12 @@ def main():
     # Display parameters
     test_parameters()
     
-    # Test MongoDB (async)
+    # Test history file
     print("\n")
     try:
-        asyncio.run(test_mongodb_connection())
+        test_history_file()
     except Exception as e:
-        print(f"MongoDB test skipped: {e}")
+        print(f"History file test failed: {e}")
     
     print("\n" + "=" * 70)
     print("VERIFICATION COMPLETE")
@@ -175,6 +178,7 @@ def main():
     print("3. Test chat: curl -X POST http://localhost:8002/chat \\")
     print("              -H 'Content-Type: application/json' \\")
     print("              -d '{\"prompt\": \"hello\"}'")
+    print("4. Check history: cat backend/history.txt")
     print("\n")
 
 if __name__ == "__main__":

@@ -94,7 +94,6 @@ async def test_imports():
         from fastapi.middleware.cors import CORSMiddleware
         from fastapi.responses import StreamingResponse
         from pydantic import BaseModel
-        from motor.motor_asyncio import AsyncIOMotorClient
         from llama_cpp import Llama
         from rich.console import Console
         from rich.logging import RichHandler
@@ -107,6 +106,7 @@ async def test_imports():
         from datetime import datetime
         from contextlib import asynccontextmanager
         from collections import defaultdict
+        import aiofiles
         
         print("✓ All imports successful")
         print("\n✅ Import test PASSED\n")
@@ -141,7 +141,7 @@ async def main():
     print("  - Proper conversation context")
     print("  - Anti-repetition mechanisms")
     print("  - Session-based history management")
-    print("  - Graceful MongoDB handling")
+    print("  - Text-based history file storage")
     return True
 
 if __name__ == "__main__":
