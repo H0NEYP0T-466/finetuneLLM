@@ -116,7 +116,7 @@ echo "Step 3: Checking MongoDB database creation"
 echo "----------------------------------------------------------------------"
 
 # Check if database was created
-DB_CHECK=$(docker exec finetune-mongodb mongosh --quiet --eval "db.getMongo().getDBNames()" 2>/dev/null || echo "failed")
+DB_CHECK=$(docker-compose exec -T mongodb mongosh --quiet --eval "db.getMongo().getDBNames()" 2>/dev/null || echo "failed")
 if echo "$DB_CHECK" | grep -q "finetuneLLM"; then
     echo -e "${GREEN}✓ Database 'finetuneLLM' exists${NC}"
 else

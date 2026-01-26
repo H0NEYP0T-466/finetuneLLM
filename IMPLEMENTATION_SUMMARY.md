@@ -3,7 +3,7 @@
 ## Changes Made to Fix MongoDB and Model Response Issues
 
 ### Files Created
-1. **`explaination.md`** - Detailed technical explanation of the issues and solutions
+1. **`explanation.md`** - Detailed technical explanation of the issues and solutions
 2. **`docker-compose.yml`** - Docker Compose configuration for MongoDB + Backend
 3. **`QUICKSTART.md`** - Quick start guide for users
 4. **`backend/verify_changes.py`** - Verification script to test changes
@@ -293,7 +293,7 @@ curl http://localhost:8002/status
 
 ## Files Reference
 
-1. **`explaination.md`** - Read this for detailed technical explanation
+1. **`explanation.md`** - Read this for detailed technical explanation
 2. **`QUICKSTART.md`** - Read this for step-by-step usage guide
 3. **`docker-compose.yml`** - Use this to start all services
 4. **`backend/verify_changes.py`** - Run this to verify changes locally

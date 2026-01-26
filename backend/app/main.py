@@ -266,7 +266,15 @@ async def chat(message: ChatMessage):
                 logger.warning(f"[bold yellow]⚠ Response too long ({len(full_response)} chars), truncating...[/bold yellow]", extra={"markup": True})
                 # Truncate at sentence boundary
                 sentences = full_response.split('. ')
-                full_response = '. '.join(sentences[:3]) + '.'
+                if len(sentences) >= 3:
+                    # Keep first 3 sentences and add period only if last sentence doesn't end with punctuation
+                    truncated = '. '.join(sentences[:3])
+                    if not truncated.endswith(('.', '!', '?')):
+                        truncated += '.'
+                    full_response = truncated
+                # If fewer than 3 sentences, just truncate at 800 characters
+                else:
+                    full_response = full_response[:800].rstrip()
             
             logger.info(f"[bold green]Model Response:[/bold green] [yellow]{full_response}[/yellow]", extra={"markup": True})
             logger.info(f"[bold blue]Response Time:[/bold blue] [white]{elapsed_time:.2f}s[/white]", extra={"markup": True})

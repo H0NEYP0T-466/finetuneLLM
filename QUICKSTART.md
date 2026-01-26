@@ -161,4 +161,4 @@ This setup now matches LM Studio behavior:
 4. ✅ Frontend accessible
 5. 🎉 Start chatting!
 
-For detailed technical explanation, see `explaination.md`.
+For detailed technical explanation, see `explanation.md`.
