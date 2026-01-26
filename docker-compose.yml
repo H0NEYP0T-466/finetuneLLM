@@ -8,4 +8,4 @@ services:
       - "8002:8002"
     volumes:
       - ./backend/model:/app/model
-      - ./backend/history.txt:/app/history.txt
+      - ./backend:/app

@@ -156,29 +156,41 @@ async def get_messages(limit: int = 20):
             lines = content.strip().split('\n')
             
             # Parse messages from history file
-            # Format: timestamp|session_id|user|prompt
-            #         timestamp|session_id|assistant|response
-            for line in lines:
+            # Format: timestamp|session_id|role|content
+            # Note: Content may contain pipe characters, so we split with maxsplit=3
+            for line_num, line in enumerate(lines, 1):
                 if not line.strip():
                     continue
                 try:
                     parts = line.split('|', 3)
-                    if len(parts) == 4:
-                        timestamp, session_id, role, content = parts
-                        # Group user and assistant messages together
-                        if role == "user":
-                            # This is a user message, next line should be assistant
-                            messages.append({
-                                "timestamp": timestamp,
-                                "session_id": session_id,
-                                "user_prompt": content,
-                                "model_response": ""
-                            })
-                        elif role == "assistant" and messages and messages[-1]["model_response"] == "":
-                            # This is the assistant response to the previous user message
+                    if len(parts) != 4:
+                        logger.warning(f"[bold yellow]⚠ Malformed line {line_num}: expected 4 parts, got {len(parts)}[/bold yellow]", extra={"markup": True})
+                        continue
+                    
+                    timestamp, session_id, role, content = parts
+                    
+                    # Group user and assistant messages together
+                    if role == "user":
+                        # This is a user message, create a new message entry
+                        messages.append({
+                            "timestamp": timestamp,
+                            "session_id": session_id,
+                            "user_prompt": content,
+                            "model_response": ""
+                        })
+                    elif role == "assistant":
+                        # This is an assistant response
+                        # Try to match with the most recent user message without a response
+                        if messages and messages[-1]["model_response"] == "":
                             messages[-1]["model_response"] = content
+                        else:
+                            # Orphaned assistant message - log a warning
+                            logger.warning(f"[bold yellow]⚠ Orphaned assistant message at line {line_num}[/bold yellow]", extra={"markup": True})
+                    else:
+                        logger.warning(f"[bold yellow]⚠ Unknown role '{role}' at line {line_num}[/bold yellow]", extra={"markup": True})
+                        
                 except Exception as e:
-                    logger.warning(f"[bold yellow]⚠ Could not parse line: {line[:50]}... - {e}[/bold yellow]", extra={"markup": True})
+                    logger.warning(f"[bold yellow]⚠ Could not parse line {line_num}: {str(e)}[/bold yellow]", extra={"markup": True})
                     continue
         
         # Get last N complete messages (where both user and assistant are present)
@@ -298,12 +310,13 @@ async def chat(message: ChatMessage):
             
             # Save to history file
             try:
-                timestamp = datetime.utcnow().isoformat()
+                user_timestamp = datetime.utcnow().isoformat()
+                assistant_timestamp = datetime.utcnow().isoformat()
                 async with aiofiles.open(HISTORY_FILE, 'a') as f:
                     # Write user message
-                    await f.write(f"{timestamp}|{session_id}|user|{user_prompt}\n")
+                    await f.write(f"{user_timestamp}|{session_id}|user|{user_prompt}\n")
                     # Write assistant response
-                    await f.write(f"{timestamp}|{session_id}|assistant|{full_response}\n")
+                    await f.write(f"{assistant_timestamp}|{session_id}|assistant|{full_response}\n")
                 logger.info("[bold green]✓ Conversation saved to history.txt[/bold green]", extra={"markup": True})
             except Exception as e:
                 logger.warning(f"[bold yellow]⚠ Could not save to history file: {e}[/bold yellow]", extra={"markup": True})
