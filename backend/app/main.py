@@ -247,8 +247,8 @@ async def chat(message: ChatMessage):
             # Stream tokens with improved parameters to match LM Studio behavior
             for output in llm_model(
                 formatted_prompt,
-                max_tokens=150,  # Reduced from 512 to prevent rambling
-                temperature=0.5,  # Reduced from 0.7 for more focused responses
+                max_tokens=512,  # Reduced from 512 to prevent rambling
+                temperature=0.7,  # Reduced from 0.7 for more focused responses
                 top_p=0.9,
                 top_k=40,
                 repeat_penalty=1.1,  # Prevent repetition
