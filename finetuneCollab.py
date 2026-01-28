@@ -237,7 +237,7 @@ def setup_model_and_tokenizer():
     """Setup model and tokenizer"""
     print_step(3, "Loading Model and Tokenizer")
     
-    # Load tokenizer
+    # Load tokenizer first
     print("🔄 Loading tokenizer...")
     tokenizer = AutoTokenizer.from_pretrained(Config.MODEL_NAME, trust_remote_code=True)
     
@@ -246,10 +246,18 @@ def setup_model_and_tokenizer():
         tokenizer.pad_token = tokenizer.eos_token
         print("✅ Set pad_token = eos_token")
     
-    # Load model
+    # Load model configuration and set pad_token_id BEFORE loading the model
+    print("🔄 Loading model configuration...")
+    from transformers import AutoConfig
+    
+    config = AutoConfig.from_pretrained(Config.MODEL_NAME, trust_remote_code=True)
+    config.pad_token_id = tokenizer.pad_token_id  # Set pad_token_id in config
+    
+    # Load model with updated configuration
     print("🔄 Loading model (this may take a few minutes)...")
     model = AutoModelForCausalLM.from_pretrained(
         Config.MODEL_NAME,
+        config=config,  # Pass the updated config
         trust_remote_code=True,
         torch_dtype=torch.float16 if Config.FP16 else torch.float32,
         device_map="auto" if torch.cuda.is_available() else None
@@ -257,6 +265,7 @@ def setup_model_and_tokenizer():
     
     print(f"✅ Model loaded: {Config.MODEL_NAME}")
     print(f"   Parameters: {sum(p.numel() for p in model.parameters()) / 1e9:.2f}B")
+    print(f"   pad_token_id: {config.pad_token_id}")
     
     return model, tokenizer
 
@@ -333,7 +342,7 @@ def train_model(model, tokenizer, train_dataset, eval_dataset):
         logging_steps=Config.LOGGING_STEPS,
         save_steps=Config.SAVE_STEPS,
         eval_steps=Config.EVAL_STEPS,
-        evaluation_strategy="steps",
+        eval_strategy="steps",
         save_strategy="steps",
         save_total_limit=Config.SAVE_TOTAL_LIMIT,
         load_best_model_at_end=True,
