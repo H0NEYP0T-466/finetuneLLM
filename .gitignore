@@ -39,3 +39,15 @@ backend/env/
 backend/.env
 backend/test_history*.txt
 
+# Fine-tuning outputs
+model/
+checkpoints/
+training_visuals/
+*.xlsx
+!dataset_example.xlsx
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
