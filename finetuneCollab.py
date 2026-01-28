@@ -74,10 +74,10 @@ class Config:
     
     # Training hyperparameters
     LEARNING_RATE = 2e-4
-    BATCH_SIZE = 4
-    GRADIENT_ACCUMULATION_STEPS = 4
+    BATCH_SIZE = 1  # Reduced from 4 to 1 to fit in GPU memory
+    GRADIENT_ACCUMULATION_STEPS = 16  # Increased from 4 to 16 to maintain effective batch size of 16
     NUM_EPOCHS = 5
-    MAX_LENGTH = 512
+    MAX_LENGTH = 256  # Reduced from 512 to 256 to use less memory per sample
     WARMUP_STEPS = 100
     WEIGHT_DECAY = 0.01
     
@@ -263,6 +263,11 @@ def setup_model_and_tokenizer():
         device_map="auto" if torch.cuda.is_available() else None
     )
     
+    # Enable gradient checkpointing to reduce memory usage
+    if hasattr(model, 'gradient_checkpointing_enable'):
+        model.gradient_checkpointing_enable()
+        print("✅ Gradient checkpointing enabled")
+    
     print(f"✅ Model loaded: {Config.MODEL_NAME}")
     print(f"   Parameters: {sum(p.numel() for p in model.parameters()) / 1e9:.2f}B")
     print(f"   pad_token_id: {config.pad_token_id}")
@@ -347,6 +352,7 @@ def train_model(model, tokenizer, train_dataset, eval_dataset):
         save_total_limit=Config.SAVE_TOTAL_LIMIT,
         load_best_model_at_end=True,
         fp16=Config.FP16,
+        gradient_checkpointing=True,  # Enable gradient checkpointing for memory efficiency
         report_to="none",
         seed=Config.SEED,
     )
