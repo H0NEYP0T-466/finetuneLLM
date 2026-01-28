@@ -205,20 +205,23 @@ To change training parameters, edit these values in `finetuneCollab.py`:
 
 ```python
 class Config:
-    # Training optimized for Tesla T4 GPU (14.74 GB)
+    # Current defaults optimized for Tesla T4 GPU (14.74 GB)
     BATCH_SIZE = 1  # Optimized for memory efficiency
     GRADIENT_ACCUMULATION_STEPS = 16  # Maintains effective batch size of 16
     MAX_LENGTH = 256  # Reduced to fit in GPU memory
+    NUM_EPOCHS = 5
     
-    # Make training faster (less quality)
-    NUM_EPOCHS = 3
+    # --- Alternative configurations (choose one) ---
     
-    # Make training slower but better quality
-    NUM_EPOCHS = 10
-    LORA_R = 32
+    # Option A: Fast training (less quality)
+    # NUM_EPOCHS = 3
     
-    # Further reduce memory usage if needed
-    MAX_LENGTH = 128
+    # Option B: Better quality (slower training)
+    # NUM_EPOCHS = 10
+    # LORA_R = 32
+    
+    # Option C: Further reduce memory usage if still encountering OOM
+    # MAX_LENGTH = 128
 ```
 
 ---

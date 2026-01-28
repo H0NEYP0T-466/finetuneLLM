@@ -352,7 +352,6 @@ def train_model(model, tokenizer, train_dataset, eval_dataset):
         save_total_limit=Config.SAVE_TOTAL_LIMIT,
         load_best_model_at_end=True,
         fp16=Config.FP16,
-        gradient_checkpointing=True,  # Enable gradient checkpointing for memory efficiency
         report_to="none",
         seed=Config.SEED,
     )
