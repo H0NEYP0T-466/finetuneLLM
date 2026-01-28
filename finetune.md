@@ -429,7 +429,7 @@ print("GPU Name:", torch.cuda.get_device_name(0) if torch.cuda.is_available() el
 
 #### 3. Install Dependencies
 ```python
-!pip install -q transformers datasets peft accelerate bitsandbytes openpyxl pandas matplotlib seaborn
+!pip install -q transformers==4.48.0 datasets==2.16.0 peft==0.7.1 accelerate==0.25.0 bitsandbytes==0.41.3 openpyxl==3.1.2 pandas==2.1.4 matplotlib==3.8.2 seaborn==0.13.0
 ```
 
 #### 4. Upload Files

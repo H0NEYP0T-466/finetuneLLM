@@ -234,7 +234,7 @@ Config.MAX_LENGTH = 256
 ### "No module named 'transformers'"
 ```python
 # Run installation again:
-!pip install --upgrade transformers datasets peft accelerate bitsandbytes
+!pip install --upgrade transformers==4.48.0 datasets peft accelerate bitsandbytes
 ```
 
 ### "Cannot find dataset.xlsx"
