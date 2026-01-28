@@ -2,7 +2,7 @@
 # Install these in Google Colab before running finetuneCollab.py
 
 # Core ML Libraries
-transformers==4.36.0     # HuggingFace transformers for model loading
+transformers==4.48.0     # HuggingFace transformers for model loading (patched for CVE)
 datasets==2.16.0         # For dataset handling
 torch>=2.0.0            # PyTorch (usually pre-installed in Colab)
 
@@ -25,4 +25,4 @@ tqdm>=4.65.0           # Progress bars
 scipy>=1.11.0          # Scientific computing
 
 # Installation command for Google Colab:
-# !pip install transformers==4.36.0 datasets==2.16.0 peft==0.7.1 accelerate==0.25.0 bitsandbytes==0.41.3 openpyxl==3.1.2 pandas==2.1.4 matplotlib==3.8.2 seaborn==0.13.0
+# !pip install transformers==4.48.0 datasets==2.16.0 peft==0.7.1 accelerate==0.25.0 bitsandbytes==0.41.3 openpyxl==3.1.2 pandas==2.1.4 matplotlib==3.8.2 seaborn==0.13.0

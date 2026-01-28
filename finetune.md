@@ -383,7 +383,7 @@ Run this in a Colab cell BEFORE running the fine-tuning script:
 
 ```python
 # Install required packages
-!pip install -q transformers==4.36.0
+!pip install -q transformers==4.48.0
 !pip install -q datasets==2.16.0
 !pip install -q peft==0.7.1
 !pip install -q accelerate==0.25.0
@@ -395,6 +395,8 @@ Run this in a Colab cell BEFORE running the fine-tuning script:
 
 print("✅ All packages installed!")
 ```
+
+> **🔒 Security Note**: We use `transformers==4.48.0` which includes security patches for deserialization vulnerabilities (CVE). Do not downgrade to versions < 4.48.0.
 
 ### File Preparation
 

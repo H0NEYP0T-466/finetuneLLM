@@ -31,7 +31,7 @@ In a new cell:
 
 ```python
 print("📦 Installing required packages (this takes 2-3 minutes)...")
-!pip install -q transformers==4.36.0 datasets==2.16.0 peft==0.7.1 accelerate==0.25.0 bitsandbytes==0.41.3 openpyxl==3.1.2 pandas==2.1.4 matplotlib==3.8.2 seaborn==0.13.0
+!pip install -q transformers==4.48.0 datasets==2.16.0 peft==0.7.1 accelerate==0.25.0 bitsandbytes==0.41.3 openpyxl==3.1.2 pandas==2.1.4 matplotlib==3.8.2 seaborn==0.13.0
 
 print("✅ All packages installed!")
 ```
@@ -159,7 +159,7 @@ try:
     print("✅ Packages already installed")
 except:
     print("📦 Installing packages...")
-    !pip install -q transformers==4.36.0 datasets==2.16.0 peft==0.7.1 accelerate==0.25.0 bitsandbytes==0.41.3 openpyxl==3.1.2 pandas==2.1.4 matplotlib==3.8.2 seaborn==0.13.0
+    !pip install -q transformers==4.48.0 datasets==2.16.0 peft==0.7.1 accelerate==0.25.0 bitsandbytes==0.41.3 openpyxl==3.1.2 pandas==2.1.4 matplotlib==3.8.2 seaborn==0.13.0
 
 # 3. Upload files (uncomment to upload)
 # from google.colab import files

@@ -20,7 +20,7 @@ This directory contains a complete implementation for fine-tuning the Microsoft 
 
 3. **Install dependencies**:
    ```python
-   !pip install -q transformers==4.36.0 datasets==2.16.0 peft==0.7.1 accelerate==0.25.0 bitsandbytes==0.41.3 openpyxl==3.1.2 pandas==2.1.4 matplotlib==3.8.2 seaborn==0.13.0
+   !pip install -q transformers==4.48.0 datasets==2.16.0 peft==0.7.1 accelerate==0.25.0 bitsandbytes==0.41.3 openpyxl==3.1.2 pandas==2.1.4 matplotlib==3.8.2 seaborn==0.13.0
    ```
 
 4. **Upload files**:
