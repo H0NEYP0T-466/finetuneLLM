@@ -10,6 +10,7 @@ A minimalistic terminal-style chat UI with React+TypeScript frontend and FastAPI
 - 💾 MongoDB chat history storage
 - 🎨 Rich and colorful server logs
 - ⚡ Auto-loads last 20 messages on startup
+- 🎓 **NEW: Fine-tune Phi-2 on custom datasets** ([Quick Start](COLAB_QUICKSTART.md) | [Full Guide](finetune.md))
 
 ## Prerequisites
 
@@ -165,6 +166,37 @@ Preview production build:
 ```bash
 npm run preview
 ```
+
+## Fine-Tuning
+
+Want to fine-tune the Phi-2 model on your own data? We've got you covered!
+
+### 🚀 Quick Start
+
+1. Prepare your dataset as `dataset.xlsx` (Excel file with Q&A pairs)
+2. Upload to Google Colab and run `finetuneCollab.py`
+3. Get your fine-tuned model in 20-30 minutes!
+
+**Read the guides:**
+- [Colab Quick Start](COLAB_QUICKSTART.md) - Get started in 5 minutes
+- [Complete Guide](finetune.md) - Full technical documentation
+- [Feature Overview](FINETUNE_README.md) - What's included
+
+### What You Get
+
+- ✅ Parameter-efficient fine-tuning with LoRA
+- ✅ Runs on free Google Colab GPU
+- ✅ Automatic training visualizations
+- ✅ Complete documentation
+- ✅ Example dataset included
+
+### Files
+
+- `finetuneCollab.py` - Main training script
+- `finetune.md` - Technical documentation (25KB)
+- `COLAB_QUICKSTART.md` - Quick start guide
+- `requirements-finetune.txt` - Dependencies
+- `dataset_example.xlsx` - Sample data
 
 ## License
 
