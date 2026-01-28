@@ -1,0 +1,28 @@
+# Requirements for Fine-Tuning Microsoft Phi-2
+# Install these in Google Colab before running finetuneCollab.py
+
+# Core ML Libraries
+transformers==4.36.0     # HuggingFace transformers for model loading
+datasets==2.16.0         # For dataset handling
+torch>=2.0.0            # PyTorch (usually pre-installed in Colab)
+
+# Parameter-Efficient Fine-Tuning
+peft==0.7.1             # LoRA and other PEFT methods
+accelerate==0.25.0      # Distributed training support
+bitsandbytes==0.41.3    # Quantization and optimization
+
+# Data Processing
+openpyxl==3.1.2         # For reading Excel files
+pandas==2.1.4           # Data manipulation
+numpy>=1.24.0           # Numerical computing
+
+# Visualization
+matplotlib==3.8.2       # Plotting
+seaborn==0.13.0         # Statistical visualizations
+
+# Utilities
+tqdm>=4.65.0           # Progress bars
+scipy>=1.11.0          # Scientific computing
+
+# Installation command for Google Colab:
+# !pip install transformers==4.36.0 datasets==2.16.0 peft==0.7.1 accelerate==0.25.0 bitsandbytes==0.41.3 openpyxl==3.1.2 pandas==2.1.4 matplotlib==3.8.2 seaborn==0.13.0
