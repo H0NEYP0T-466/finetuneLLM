@@ -1,0 +1,370 @@
+🚀 Running on Google Colab
+2026-01-31 14:22:25.006600: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:467] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+E0000 00:00:1769869345.026020    1650 cuda_dnn.cc:8579] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+E0000 00:00:1769869345.031917    1650 cuda_blas.cc:1407] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+W0000 00:00:1769869345.046920    1650 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1769869345.046944    1650 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1769869345.046948    1650 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1769869345.046953    1650 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+2026-01-31 14:22:25.051534: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 AVX512F FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+
+================================================================================
+  🚀 Microsoft Phi-2 Fine-Tuning Script
+================================================================================
+
+This script will fine-tune the Phi-2 model on your custom Q&A dataset
+Start time: 2026-01-31 14:22:32
+
+✅ GPU Available: Tesla T4
+   Memory: 14.74 GB
+✅ Random seed set to 42
+✅ Configuration saved to ./training_visuals/training_config.json
+
+[Step 1] Loading Dataset
+------------------------------------------------------------
+✅ Loaded dataset with 489 rows
+   Columns: ['user', 'assistant']
+
+📊 Sample data:
+                           user                                          assistant
+0                            hi                                       hello mister
+1            what is your name?  Good question you are asking like you don’t kn...
+2  are you microsoft phi model?  This name is soo boring I really don’t like th...
+
+[Step 3] Loading Model and Tokenizer
+------------------------------------------------------------
+🔄 Loading tokenizer...
+tokenizer_config.json: 7.34kB [00:00, 25.0MB/s]
+vocab.json: 798kB [00:00, 30.3MB/s]
+merges.txt: 456kB [00:00, 98.4MB/s]
+tokenizer.json: 2.11MB [00:00, 171MB/s]
+added_tokens.json: 1.08kB [00:00, 5.70MB/s]
+special_tokens_map.json: 100% 99.0/99.0 [00:00<00:00, 551kB/s]
+✅ Set pad_token = eos_token
+🔄 Loading model configuration...
+config.json: 100% 735/735 [00:00<00:00, 5.74MB/s]
+🔄 Loading model (this may take a few minutes)...
+`torch_dtype` is deprecated! Use `dtype` instead!
+model.safetensors.index.json: 35.7kB [00:00, 102MB/s]
+Fetching 2 files:   0% 0/2 [00:00<?, ?it/s]
+model-00001-of-00002.safetensors:   0% 0.00/5.00G [00:00<?, ?B/s]
+
+model-00002-of-00002.safetensors:   0% 0.00/564M [00:00<?, ?B/s]
+model-00001-of-00002.safetensors:   0% 1.34M/5.00G [00:01<1:39:02, 840kB/s]
+model-00001-of-00002.safetensors:   0% 14.4M/5.00G [00:01<07:13, 11.5MB/s] 
+model-00001-of-00002.safetensors:   0% 23.0M/5.00G [00:01<04:52, 17.0MB/s]
+model-00001-of-00002.safetensors:   1% 30.0M/5.00G [00:02<03:44, 22.1MB/s]
+model-00001-of-00002.safetensors:   1% 45.8M/5.00G [00:02<02:09, 38.2MB/s]
+model-00001-of-00002.safetensors:   2% 79.2M/5.00G [00:02<00:58, 83.4MB/s]
+model-00001-of-00002.safetensors:   2% 104M/5.00G [00:02<00:43, 112MB/s]  
+model-00001-of-00002.safetensors:   3% 136M/5.00G [00:02<00:57, 85.0MB/s]
+model-00001-of-00002.safetensors:   5% 251M/5.00G [00:03<00:21, 221MB/s] 
+
+model-00002-of-00002.safetensors:   5% 27.4M/564M [00:03<01:02, 8.59MB/s]
+model-00001-of-00002.safetensors:   6% 292M/5.00G [00:03<00:26, 177MB/s]
+model-00001-of-00002.safetensors:   7% 339M/5.00G [00:03<00:22, 205MB/s]
+
+model-00002-of-00002.safetensors:  17% 94.5M/564M [00:03<00:15, 31.1MB/s]
+model-00001-of-00002.safetensors:   7% 371M/5.00G [00:03<00:26, 175MB/s]
+model-00001-of-00002.safetensors:   9% 433M/5.00G [00:07<02:12, 34.4MB/s]
+
+model-00002-of-00002.safetensors:  29% 162M/564M [00:08<00:21, 18.6MB/s] 
+model-00001-of-00002.safetensors:   9% 464M/5.00G [00:08<02:06, 36.0MB/s]
+model-00001-of-00002.safetensors:  10% 483M/5.00G [00:09<02:04, 36.2MB/s]
+
+model-00002-of-00002.safetensors:  41% 229M/564M [00:09<00:11, 28.5MB/s]
+model-00001-of-00002.safetensors:  10% 522M/5.00G [00:09<01:41, 44.2MB/s]
+model-00001-of-00002.safetensors:  11% 560M/5.00G [00:09<01:20, 55.3MB/s]
+model-00001-of-00002.safetensors:  12% 591M/5.00G [00:10<01:04, 68.3MB/s]
+model-00001-of-00002.safetensors:  14% 682M/5.00G [00:12<01:35, 45.3MB/s]
+model-00001-of-00002.safetensors:  14% 707M/5.00G [00:12<01:21, 52.5MB/s]
+model-00001-of-00002.safetensors:  15% 742M/5.00G [00:13<01:05, 64.7MB/s]
+model-00001-of-00002.safetensors:  16% 775M/5.00G [00:13<00:52, 81.0MB/s]
+model-00001-of-00002.safetensors:  16% 807M/5.00G [00:13<00:44, 93.3MB/s]
+model-00001-of-00002.safetensors:  17% 842M/5.00G [00:13<00:35, 117MB/s] 
+model-00001-of-00002.safetensors:  18% 894M/5.00G [00:13<00:25, 158MB/s]
+model-00001-of-00002.safetensors:  19% 972M/5.00G [00:13<00:21, 188MB/s]
+model-00001-of-00002.safetensors:  20% 1.01G/5.00G [00:14<00:19, 208MB/s]
+model-00001-of-00002.safetensors:  21% 1.06G/5.00G [00:14<00:18, 218MB/s]
+model-00001-of-00002.safetensors:  23% 1.12G/5.00G [00:14<00:17, 223MB/s]
+model-00001-of-00002.safetensors:  24% 1.18G/5.00G [00:14<00:16, 235MB/s]
+model-00001-of-00002.safetensors:  24% 1.21G/5.00G [00:14<00:15, 239MB/s]
+model-00001-of-00002.safetensors:  25% 1.24G/5.00G [00:14<00:17, 220MB/s]
+model-00001-of-00002.safetensors:  25% 1.27G/5.00G [00:15<00:19, 190MB/s]
+model-00001-of-00002.safetensors:  27% 1.34G/5.00G [00:15<00:16, 224MB/s]
+model-00001-of-00002.safetensors:  27% 1.37G/5.00G [00:15<00:16, 217MB/s]
+model-00001-of-00002.safetensors:  28% 1.41G/5.00G [00:15<00:16, 221MB/s]
+model-00001-of-00002.safetensors:  29% 1.47G/5.00G [00:15<00:13, 254MB/s]
+model-00001-of-00002.safetensors:  30% 1.52G/5.00G [00:16<00:12, 273MB/s]
+
+model-00002-of-00002.safetensors:  52% 296M/564M [00:16<00:16, 16.3MB/s]
+model-00001-of-00002.safetensors:  31% 1.56G/5.00G [00:16<00:19, 177MB/s]
+model-00001-of-00002.safetensors:  32% 1.61G/5.00G [00:16<00:15, 213MB/s]
+
+model-00002-of-00002.safetensors:  64% 363M/564M [00:16<00:08, 23.1MB/s]
+model-00001-of-00002.safetensors:  34% 1.69G/5.00G [00:17<00:15, 208MB/s]
+model-00001-of-00002.safetensors:  34% 1.72G/5.00G [00:17<00:24, 131MB/s]
+model-00001-of-00002.safetensors:  35% 1.74G/5.00G [00:17<00:23, 139MB/s]
+model-00001-of-00002.safetensors:  36% 1.80G/5.00G [00:17<00:17, 185MB/s]
+model-00001-of-00002.safetensors:  37% 1.83G/5.00G [00:18<00:15, 209MB/s]
+model-00001-of-00002.safetensors:  37% 1.87G/5.00G [00:18<00:13, 230MB/s]
+model-00001-of-00002.safetensors:  39% 1.93G/5.00G [00:18<00:10, 280MB/s]
+model-00001-of-00002.safetensors:  40% 1.98G/5.00G [00:20<00:55, 54.5MB/s]
+model-00001-of-00002.safetensors:  43% 2.16G/5.00G [00:21<00:21, 130MB/s] 
+model-00001-of-00002.safetensors:  45% 2.25G/5.00G [00:21<00:17, 155MB/s]
+model-00001-of-00002.safetensors:  46% 2.32G/5.00G [00:22<00:20, 130MB/s]
+model-00001-of-00002.safetensors:  47% 2.37G/5.00G [00:22<00:17, 148MB/s]
+model-00001-of-00002.safetensors:  49% 2.43G/5.00G [00:22<00:16, 153MB/s]
+model-00001-of-00002.safetensors:  49% 2.46G/5.00G [00:23<00:20, 125MB/s]
+model-00001-of-00002.safetensors:  51% 2.53G/5.00G [00:23<00:14, 169MB/s]
+model-00001-of-00002.safetensors:  52% 2.60G/5.00G [00:23<00:12, 197MB/s]
+model-00001-of-00002.safetensors:  53% 2.65G/5.00G [00:23<00:11, 212MB/s]
+model-00001-of-00002.safetensors:  54% 2.69G/5.00G [00:23<00:10, 228MB/s]
+model-00001-of-00002.safetensors:  55% 2.75G/5.00G [00:24<00:10, 206MB/s]
+model-00001-of-00002.safetensors:  56% 2.78G/5.00G [00:24<00:11, 191MB/s]
+model-00001-of-00002.safetensors:  57% 2.83G/5.00G [00:24<00:12, 180MB/s]
+model-00001-of-00002.safetensors:  58% 2.88G/5.00G [00:24<00:10, 202MB/s]
+
+model-00002-of-00002.safetensors:  76% 430M/564M [00:24<00:09, 14.5MB/s]
+model-00001-of-00002.safetensors:  59% 2.94G/5.00G [00:25<00:09, 210MB/s]
+model-00001-of-00002.safetensors:  60% 2.98G/5.00G [00:25<00:08, 229MB/s]
+model-00001-of-00002.safetensors:  60% 3.01G/5.00G [00:25<00:10, 191MB/s]
+model-00001-of-00002.safetensors:  61% 3.04G/5.00G [00:25<00:09, 197MB/s]
+
+model-00002-of-00002.safetensors:  88% 497M/564M [00:25<00:03, 19.5MB/s]
+model-00001-of-00002.safetensors:  61% 3.06G/5.00G [00:26<00:14, 130MB/s]
+
+model-00002-of-00002.safetensors: 100% 564M/564M [00:26<00:00, 21.6MB/s]
+
+model-00001-of-00002.safetensors:  62% 3.12G/5.00G [00:26<00:12, 151MB/s]
+model-00001-of-00002.safetensors:  63% 3.17G/5.00G [00:26<00:10, 180MB/s]
+model-00001-of-00002.safetensors:  64% 3.21G/5.00G [00:26<00:08, 206MB/s]
+model-00001-of-00002.safetensors:  65% 3.24G/5.00G [00:26<00:08, 219MB/s]
+model-00001-of-00002.safetensors:  66% 3.29G/5.00G [00:26<00:06, 252MB/s]
+model-00001-of-00002.safetensors:  67% 3.32G/5.00G [00:27<00:07, 220MB/s]
+model-00001-of-00002.safetensors:  67% 3.36G/5.00G [00:27<00:08, 186MB/s]
+model-00001-of-00002.safetensors:  68% 3.40G/5.00G [00:27<00:07, 218MB/s]
+model-00001-of-00002.safetensors:  69% 3.43G/5.00G [00:27<00:07, 220MB/s]
+model-00001-of-00002.safetensors:  70% 3.48G/5.00G [00:27<00:06, 251MB/s]
+model-00001-of-00002.safetensors:  70% 3.52G/5.00G [00:28<00:06, 216MB/s]
+model-00001-of-00002.safetensors:  72% 3.57G/5.00G [00:28<00:05, 257MB/s]
+model-00001-of-00002.safetensors:  73% 3.63G/5.00G [00:28<00:04, 288MB/s]
+model-00001-of-00002.safetensors:  73% 3.67G/5.00G [00:28<00:05, 255MB/s]
+model-00001-of-00002.safetensors:  75% 3.73G/5.00G [00:28<00:04, 283MB/s]
+model-00001-of-00002.safetensors:  75% 3.76G/5.00G [00:28<00:04, 282MB/s]
+model-00001-of-00002.safetensors:  76% 3.81G/5.00G [00:28<00:03, 298MB/s]
+model-00001-of-00002.safetensors:  77% 3.84G/5.00G [00:31<00:21, 54.8MB/s]
+model-00001-of-00002.safetensors:  77% 3.87G/5.00G [00:31<00:17, 65.1MB/s]
+model-00001-of-00002.safetensors:  79% 3.94G/5.00G [00:31<00:09, 113MB/s] 
+model-00001-of-00002.safetensors:  80% 3.99G/5.00G [00:31<00:07, 130MB/s]
+model-00001-of-00002.safetensors:  80% 4.02G/5.00G [00:32<00:09, 102MB/s]
+model-00001-of-00002.safetensors:  81% 4.06G/5.00G [00:32<00:07, 126MB/s]
+model-00001-of-00002.safetensors:  82% 4.10G/5.00G [00:32<00:06, 147MB/s]
+model-00001-of-00002.safetensors:  83% 4.12G/5.00G [00:32<00:05, 162MB/s]
+model-00001-of-00002.safetensors:  83% 4.17G/5.00G [00:32<00:04, 169MB/s]
+model-00001-of-00002.safetensors:  85% 4.25G/5.00G [00:33<00:03, 211MB/s]
+model-00001-of-00002.safetensors:  87% 4.32G/5.00G [00:35<00:09, 70.3MB/s]
+model-00001-of-00002.safetensors:  89% 4.43G/5.00G [00:35<00:05, 109MB/s] 
+model-00001-of-00002.safetensors:  90% 4.48G/5.00G [00:35<00:03, 136MB/s]
+model-00001-of-00002.safetensors:  91% 4.54G/5.00G [00:35<00:02, 155MB/s]
+model-00001-of-00002.safetensors:  92% 4.61G/5.00G [00:35<00:01, 199MB/s]
+model-00001-of-00002.safetensors:  94% 4.69G/5.00G [00:36<00:01, 214MB/s]
+model-00001-of-00002.safetensors:  95% 4.73G/5.00G [00:36<00:01, 220MB/s]
+model-00001-of-00002.safetensors:  96% 4.78G/5.00G [00:36<00:00, 224MB/s]
+model-00001-of-00002.safetensors:  97% 4.83G/5.00G [00:36<00:00, 232MB/s]
+model-00001-of-00002.safetensors:  98% 4.88G/5.00G [00:37<00:00, 230MB/s]
+model-00001-of-00002.safetensors: 100% 5.00G/5.00G [00:39<00:00, 127MB/s] 
+Fetching 2 files: 100% 2/2 [00:39<00:00, 19.79s/it]
+Loading checkpoint shards: 100% 2/2 [00:20<00:00, 10.21s/it]
+generation_config.json: 100% 124/124 [00:00<00:00, 740kB/s]
+✅ Gradient checkpointing enabled
+✅ Model loaded: microsoft/phi-2
+   Parameters: 2.78B
+   pad_token_id: 50256
+
+[Step 2] Preprocessing Dataset
+------------------------------------------------------------
+⚠️  Could not auto-detect columns. Using first two columns.
+✅ Using columns: Question='user', Answer='assistant'
+✅ Preprocessed 489 valid Q&A pairs
+🔄 Tokenizing dataset...
+Map: 100% 489/489 [00:00<00:00, 3112.01 examples/s]
+✅ Training samples: 440
+✅ Validation samples: 49
+
+[Step 4] Configuring LoRA
+------------------------------------------------------------
+✅ LoRA configured
+   Trainable parameters: 7,864,320 (0.28%)
+   Total parameters: 2,787,548,160
+
+[Step 5] Training Model
+------------------------------------------------------------
+The model is already on multiple devices. Skipping the move to device specified in `args`.
+🚀 Starting training...
+   Total epochs: 5
+   Batch size: 1
+   Gradient accumulation: 16
+   Effective batch size: 16
+   Learning rate: 0.0002
+  0% 0/140 [00:00<?, ?it/s]`use_cache=True` is incompatible with gradient checkpointing. Setting `use_cache=False`.
+{'loss': 4.1781, 'grad_norm': 0.6663194298744202, 'learning_rate': 1.8e-05, 'epoch': 0.36}
+{'loss': 4.1013, 'grad_norm': 0.8518657088279724, 'learning_rate': 3.8e-05, 'epoch': 0.73}
+{'loss': 3.8242, 'grad_norm': 1.0241074562072754, 'learning_rate': 5.8e-05, 'epoch': 1.07}
+{'loss': 3.4103, 'grad_norm': 0.9692190885543823, 'learning_rate': 7.800000000000001e-05, 'epoch': 1.44}
+{'loss': 3.0027, 'grad_norm': 1.0576369762420654, 'learning_rate': 9.8e-05, 'epoch': 1.8}
+ 36% 50/140 [06:16<11:10,  7.45s/it]
+  0% 0/49 [00:00<?, ?it/s]
+  4% 2/49 [00:00<00:03, 11.84it/s]
+  8% 4/49 [00:00<00:06,  7.48it/s]
+ 10% 5/49 [00:00<00:06,  6.94it/s]
+ 12% 6/49 [00:00<00:06,  6.61it/s]
+ 14% 7/49 [00:01<00:06,  6.39it/s]
+ 16% 8/49 [00:01<00:06,  6.24it/s]
+ 18% 9/49 [00:01<00:06,  6.14it/s]
+ 20% 10/49 [00:01<00:06,  6.09it/s]
+ 22% 11/49 [00:01<00:06,  6.05it/s]
+ 24% 12/49 [00:01<00:06,  6.00it/s]
+ 27% 13/49 [00:02<00:06,  5.97it/s]
+ 29% 14/49 [00:02<00:05,  5.92it/s]
+ 31% 15/49 [00:02<00:05,  5.92it/s]
+ 33% 16/49 [00:02<00:05,  5.94it/s]
+ 35% 17/49 [00:02<00:05,  5.94it/s]
+ 37% 18/49 [00:02<00:05,  5.94it/s]
+ 39% 19/49 [00:03<00:05,  5.92it/s]
+ 41% 20/49 [00:03<00:04,  5.92it/s]
+ 43% 21/49 [00:03<00:04,  5.92it/s]
+ 45% 22/49 [00:03<00:04,  5.92it/s]
+ 47% 23/49 [00:03<00:04,  5.95it/s]
+ 49% 24/49 [00:03<00:04,  5.96it/s]
+ 51% 25/49 [00:04<00:04,  5.95it/s]
+ 53% 26/49 [00:04<00:03,  5.95it/s]
+ 55% 27/49 [00:04<00:03,  5.93it/s]
+ 57% 28/49 [00:04<00:03,  5.91it/s]
+ 59% 29/49 [00:04<00:03,  5.94it/s]
+ 61% 30/49 [00:04<00:03,  5.93it/s]
+ 63% 31/49 [00:05<00:03,  5.92it/s]
+ 65% 32/49 [00:05<00:02,  5.93it/s]
+ 67% 33/49 [00:05<00:02,  5.93it/s]
+ 69% 34/49 [00:05<00:02,  5.93it/s]
+ 71% 35/49 [00:05<00:02,  5.94it/s]
+ 73% 36/49 [00:05<00:02,  5.95it/s]
+ 76% 37/49 [00:06<00:02,  5.92it/s]
+ 78% 38/49 [00:06<00:01,  5.93it/s]
+ 80% 39/49 [00:06<00:01,  5.92it/s]
+ 82% 40/49 [00:06<00:01,  5.80it/s]
+ 84% 41/49 [00:06<00:01,  5.82it/s]
+ 86% 42/49 [00:06<00:01,  5.85it/s]
+ 88% 43/49 [00:07<00:01,  5.87it/s]
+ 90% 44/49 [00:07<00:00,  5.88it/s]
+ 92% 45/49 [00:07<00:00,  5.88it/s]
+ 94% 46/49 [00:07<00:00,  5.88it/s]
+ 96% 47/49 [00:07<00:00,  5.86it/s]
+ 98% 48/49 [00:07<00:00,  5.86it/s]
+                                    
+{'eval_loss': 2.823068141937256, 'eval_runtime': 8.2936, 'eval_samples_per_second': 5.908, 'eval_steps_per_second': 5.908, 'epoch': 1.8}
+ 36% 50/140 [06:24<11:10,  7.45s/it]
+100% 49/49 [00:08<00:00,  5.87it/s]
+{'loss': 2.7195, 'grad_norm': 1.1961976289749146, 'learning_rate': 0.000118, 'epoch': 2.15}
+{'loss': 2.6288, 'grad_norm': 1.3649678230285645, 'learning_rate': 0.000138, 'epoch': 2.51}
+{'loss': 2.4337, 'grad_norm': 1.335321068763733, 'learning_rate': 0.00015800000000000002, 'epoch': 2.87}
+{'loss': 2.4163, 'grad_norm': 1.4044227600097656, 'learning_rate': 0.00017800000000000002, 'epoch': 3.22}
+{'loss': 2.3131, 'grad_norm': 1.5327563285827637, 'learning_rate': 0.00019800000000000002, 'epoch': 3.58}
+ 71% 100/140 [12:30<04:58,  7.45s/it]
+  0% 0/49 [00:00<?, ?it/s]
+  4% 2/49 [00:00<00:04, 11.69it/s]
+  8% 4/49 [00:00<00:06,  7.41it/s]
+ 10% 5/49 [00:00<00:06,  6.89it/s]
+ 12% 6/49 [00:00<00:06,  6.53it/s]
+ 14% 7/49 [00:01<00:06,  6.32it/s]
+ 16% 8/49 [00:01<00:06,  6.08it/s]
+ 18% 9/49 [00:01<00:06,  6.11it/s]
+ 20% 10/49 [00:01<00:06,  5.94it/s]
+ 22% 11/49 [00:01<00:06,  5.81it/s]
+ 24% 12/49 [00:01<00:06,  5.88it/s]
+ 27% 13/49 [00:02<00:05,  6.04it/s]
+ 29% 14/49 [00:02<00:05,  6.00it/s]
+ 31% 15/49 [00:02<00:05,  6.00it/s]
+ 33% 16/49 [00:02<00:05,  5.96it/s]
+ 35% 17/49 [00:02<00:05,  5.94it/s]
+ 37% 18/49 [00:02<00:05,  5.93it/s]
+ 39% 19/49 [00:03<00:05,  5.92it/s]
+ 41% 20/49 [00:03<00:04,  5.93it/s]
+ 43% 21/49 [00:03<00:04,  5.94it/s]
+ 45% 22/49 [00:03<00:04,  5.95it/s]
+ 47% 23/49 [00:03<00:04,  5.94it/s]
+ 49% 24/49 [00:03<00:04,  5.95it/s]
+ 51% 25/49 [00:04<00:04,  5.94it/s]
+ 53% 26/49 [00:04<00:03,  5.95it/s]
+ 55% 27/49 [00:04<00:03,  5.96it/s]
+ 57% 28/49 [00:04<00:03,  5.96it/s]
+ 59% 29/49 [00:04<00:03,  5.94it/s]
+ 61% 30/49 [00:04<00:03,  5.92it/s]
+ 63% 31/49 [00:05<00:03,  5.91it/s]
+ 65% 32/49 [00:05<00:02,  5.91it/s]
+ 67% 33/49 [00:05<00:02,  5.93it/s]
+ 69% 34/49 [00:05<00:02,  5.93it/s]
+ 71% 35/49 [00:05<00:02,  5.94it/s]
+ 73% 36/49 [00:05<00:02,  5.91it/s]
+ 76% 37/49 [00:06<00:02,  5.91it/s]
+ 78% 38/49 [00:06<00:01,  5.93it/s]
+ 80% 39/49 [00:06<00:01,  5.95it/s]
+ 82% 40/49 [00:06<00:01,  5.95it/s]
+ 84% 41/49 [00:06<00:01,  5.94it/s]
+ 86% 42/49 [00:06<00:01,  5.93it/s]
+ 88% 43/49 [00:07<00:01,  5.92it/s]
+ 90% 44/49 [00:07<00:00,  5.92it/s]
+ 92% 45/49 [00:07<00:00,  5.91it/s]
+ 94% 46/49 [00:07<00:00,  5.93it/s]
+ 96% 47/49 [00:07<00:00,  5.91it/s]
+ 98% 48/49 [00:07<00:00,  5.93it/s]
+                                     
+{'eval_loss': 2.350130081176758, 'eval_runtime': 8.2944, 'eval_samples_per_second': 5.908, 'eval_steps_per_second': 5.908, 'epoch': 3.58}
+ 71% 100/140 [12:38<04:58,  7.45s/it]
+100% 49/49 [00:08<00:00,  5.92it/s]
+{'loss': 2.2605, 'grad_norm': 1.3042387962341309, 'learning_rate': 0.000155, 'epoch': 3.95}
+{'loss': 2.2063, 'grad_norm': 1.4437108039855957, 'learning_rate': 0.000105, 'epoch': 4.29}
+{'loss': 2.1538, 'grad_norm': 1.6033294200897217, 'learning_rate': 5.500000000000001e-05, 'epoch': 4.65}
+{'loss': 2.1278, 'grad_norm': 2.032865285873413, 'learning_rate': 5e-06, 'epoch': 5.0}
+{'train_runtime': 1050.713, 'train_samples_per_second': 2.094, 'train_steps_per_second': 0.133, 'train_loss': 2.8411664962768555, 'epoch': 5.0}
+100% 140/140 [17:30<00:00,  7.51s/it]
+
+✅ Training completed in 17.52 minutes
+   Final training loss: 2.8412
+
+[Step 6] Creating Visualizations
+------------------------------------------------------------
+✅ Training curves saved to ./training_visuals/training_curves.png
+✅ Loss comparison saved to ./training_visuals/loss_comparison.png
+✅ Training metrics saved to ./training_visuals/training_metrics.csv
+
+[Step 7] Saving Model
+------------------------------------------------------------
+💾 Saving LoRA adapter...
+✅ Model saved to ./model
+   Files saved:
+   - README.md
+   - adapter_model.safetensors
+   - tokenizer_config.json
+   - vocab.json
+   - special_tokens_map.json
+   - adapter_config.json
+   - tokenizer.json
+   - merges.txt
+   - added_tokens.json
+✅ Model README saved
+
+================================================================================
+  ✅ Fine-Tuning Complete!
+================================================================================
+
+Your fine-tuned model is ready to use!
+
+📂 Output locations:
+   Model: ./model
+   Checkpoints: ./checkpoints
+   Visualizations: ./training_visuals
+
+End time: 2026-01-31 14:41:11
