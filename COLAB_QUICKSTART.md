@@ -205,19 +205,23 @@ To change training parameters, edit these values in `finetuneCollab.py`:
 
 ```python
 class Config:
-    # Make training faster (less quality)
-    NUM_EPOCHS = 3
+    # Current defaults optimized for Tesla T4 GPU (14.74 GB)
+    BATCH_SIZE = 1  # Optimized for memory efficiency
+    GRADIENT_ACCUMULATION_STEPS = 16  # Maintains effective batch size of 16
+    MAX_LENGTH = 256  # Reduced to fit in GPU memory
+    NUM_EPOCHS = 5
     
-    # Make training slower but better quality
-    NUM_EPOCHS = 10
-    LORA_R = 32
+    # --- Alternative configurations (choose one) ---
     
-    # Reduce memory usage
-    BATCH_SIZE = 2
-    MAX_LENGTH = 256
+    # Option A: Fast training (less quality)
+    # NUM_EPOCHS = 3
     
-    # Increase batch size if you have more memory
-    BATCH_SIZE = 8
+    # Option B: Better quality (slower training)
+    # NUM_EPOCHS = 10
+    # LORA_R = 32
+    
+    # Option C: Further reduce memory usage if still encountering OOM
+    # MAX_LENGTH = 128
 ```
 
 ---
@@ -225,11 +229,12 @@ class Config:
 ## 🐛 Troubleshooting
 
 ### "CUDA out of memory"
-```python
-# In finetuneCollab.py, change:
-Config.BATCH_SIZE = 2
-Config.MAX_LENGTH = 256
-```
+The script now includes memory optimizations by default:
+- Batch size: 1 (reduced from 4)
+- Max length: 256 (reduced from 512)
+- Gradient checkpointing: enabled
+
+If you still encounter memory issues, you can further reduce MAX_LENGTH to 128.
 
 ### "No module named 'transformers'"
 ```python
