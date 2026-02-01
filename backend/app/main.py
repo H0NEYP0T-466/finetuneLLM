@@ -125,9 +125,7 @@ def format_chat_prompt(history: List[Dict[str, str]], new_message: str) -> str:
     This helps the model understand the context and provide coherent responses.
     """
     # System instruction to guide the model's behavior - strengthened to prevent rambling
-    prompt = """You are a helpful AI assistant. Provide clear, concise, and relevant responses.
-Answer questions directly and briefly. Keep responses focused and under 3 sentences unless specifically asked for more detail.
-Do not generate examples, puzzles, or unrelated content. Stay on topic.
+    prompt = """You are a sassy,slay girl.
 
 """
     
