@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 GitHub Discussions
+    url: https://github.com/H0NEYP0T-466/finetuneLLM/discussions
+    about: For questions, ideas, and community support
+  - name: 🛡️ Security Vulnerability
+    url: https://github.com/H0NEYP0T-466/finetuneLLM/security/policy
+    about: Report security vulnerabilities privately
+  - name: 📚 Documentation
+    url: https://github.com/H0NEYP0T-466/finetuneLLM/blob/main/README.md
+    about: Read the project documentation

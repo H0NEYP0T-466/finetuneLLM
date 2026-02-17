@@ -1,4 +1,56 @@
-# Security Updates
+# 🛡 Security Policy
+
+## 📋 Supported Versions
+
+We release patches for security vulnerabilities. The following versions are currently supported:
+
+| Version | Supported          |
+| ------- | ------------------ |
+| 1.x.x   | :white_check_mark: |
+| < 1.0   | :x:                |
+
+## 🚨 Reporting a Vulnerability
+
+**Please do not report security vulnerabilities through public GitHub issues.**
+
+If you discover a security vulnerability, please report it via:
+
+### Preferred Contact Methods
+
+1. **GitHub Private Vulnerability Reporting**
+   - Go to the [Security tab](https://github.com/H0NEYP0T-466/finetuneLLM/security)
+   - Click "Report a vulnerability"
+   - Fill in the details
+
+2. **Email**
+   - Send details to the repository maintainers
+   - Include "SECURITY" in the subject line
+
+### What to Include
+
+Please include the following information:
+- Type of vulnerability
+- Full paths of source file(s) related to the vulnerability
+- Location of the affected source code (tag/branch/commit)
+- Step-by-step instructions to reproduce the issue
+- Proof-of-concept or exploit code (if possible)
+- Impact of the issue, including how an attacker might exploit it
+
+### Response Timeline
+
+- **Initial Response**: We aim to acknowledge receipt within **48 hours**
+- **Status Updates**: We'll provide updates every **5 business days**
+- **Fix Timeline**: Critical issues will be patched within **7 days**, others within **30 days**
+- **Public Disclosure**: We'll coordinate disclosure timing with you
+
+## 🔐 Security Update Policy
+
+- Security patches are released as soon as possible
+- Critical vulnerabilities receive immediate attention
+- All security updates are documented in this file
+- Users are notified through GitHub releases and security advisories
+
+---
 
 ## Recent Security Fixes
 
