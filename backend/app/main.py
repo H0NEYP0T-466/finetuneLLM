@@ -119,24 +119,17 @@ async def get_status():
         "history_file": str(HISTORY_FILE)
     }
 
-def format_chat_prompt(history: List[Dict[str, str]], new_message: str) -> str:
+def format_chat_prompt(new_message: str) -> str:
     """
-    Format conversation history into a proper chat prompt.
-    This helps the model understand the context and provide coherent responses.
+    Format prompt with ONLY system instruction and the new message.
+    NO conversation history is included.
     """
-    # System instruction to guide the model's behavior - strengthened to prevent rambling
-    prompt = """You are a sassy,slay girl.
+    # System instruction to guide the model's behavior
+    prompt = """You are a sassy,slay girl.Keep your responses concise and to the point. Avoid unnecessary elaboration or rambling. Always stay on topic and provide clear, direct answers.
 
 """
     
-    # Add conversation history
-    for msg in history:
-        if msg["role"] == "user":
-            prompt += f"User: {msg['content']}\n"
-        elif msg["role"] == "assistant":
-            prompt += f"Assistant: {msg['content']}\n"
-    
-    # Add current user message
+    # Add ONLY the current user message
     prompt += f"User: {new_message}\nAssistant:"
     
     return prompt
@@ -218,7 +211,7 @@ async def clear_history(session_id: str = "default"):
 
 @app.post("/chat")
 async def chat(message: ChatMessage):
-    """Stream chat response token by token with conversation context"""
+    """Stream chat response token by token WITHOUT conversation context"""
     if not llm_model:
         raise HTTPException(status_code=503, detail="Model not loaded")
     
@@ -228,11 +221,8 @@ async def chat(message: ChatMessage):
     logger.info(f"[bold magenta]User Prompt:[/bold magenta] [cyan]{user_prompt}[/cyan]", extra={"markup": True})
     logger.info(f"[bold magenta]Session ID:[/bold magenta] [cyan]{session_id}[/cyan]", extra={"markup": True})
     
-    # Get conversation history for this session
-    history = conversation_history[session_id]
-    
-    # Format the prompt with conversation context
-    formatted_prompt = format_chat_prompt(history, user_prompt)
+    # Format the prompt with ONLY system instruction + current message (NO HISTORY)
+    formatted_prompt = format_chat_prompt(user_prompt)
     
     logger.info(f"[bold cyan]Formatted prompt length:[/bold cyan] [white]{len(formatted_prompt)} chars[/white]", extra={"markup": True})
     
@@ -245,11 +235,11 @@ async def chat(message: ChatMessage):
             # Stream tokens with improved parameters to match LM Studio behavior
             for output in llm_model(
                 formatted_prompt,
-                max_tokens=512,  # Reduced from 512 to prevent rambling
+                max_tokens=256,  # Reduced from 512 to prevent rambling
                 temperature=0.7,  # Reduced from 0.7 for more focused responses
                 top_p=0.9,
                 top_k=40,
-                repeat_penalty=1.1,  # Prevent repetition
+                repeat_penalty=1.2,  # Prevent repetition
                 stream=True,
                 # Enhanced stop sequences to prevent hallucination
                 stop=[
@@ -298,11 +288,11 @@ async def chat(message: ChatMessage):
             logger.info(f"[bold blue]Response Time:[/bold blue] [white]{elapsed_time:.2f}s[/white]", extra={"markup": True})
             logger.info(f"[bold blue]Tokens Generated:[/bold blue] [white]{token_count} ({tokens_per_sec:.2f} tokens/s)[/white]", extra={"markup": True})
             
-            # Update conversation history
+            # Still save to conversation history for display purposes (but NOT used in prompts)
             conversation_history[session_id].append({"role": "user", "content": user_prompt})
             conversation_history[session_id].append({"role": "assistant", "content": full_response})
             
-            # Keep only last 10 exchanges (20 messages) to prevent context from getting too long
+            # Keep only last 10 exchanges (20 messages)
             if len(conversation_history[session_id]) > 20:
                 conversation_history[session_id] = conversation_history[session_id][-20:]
             
