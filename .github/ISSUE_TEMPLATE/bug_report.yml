@@ -1,0 +1,129 @@
+name: 🐛 Bug Report
+description: Report a problem with FineTuneLLM
+labels: ["bug", "triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report this issue! Please fill out the sections below to help us understand and fix the problem.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 🐛 Bug Description
+      description: A clear and concise description of what the bug is.
+      placeholder: Describe the bug...
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 📝 Steps to Reproduce
+      description: Steps to reproduce the behavior
+      placeholder: |
+        1. Go to '...'
+        2. Click on '...'
+        3. Scroll down to '...'
+        4. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: ✅ Expected Behavior
+      description: What did you expect to happen?
+      placeholder: Describe what you expected...
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: ❌ Actual Behavior
+      description: What actually happened?
+      placeholder: Describe what actually happened...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: 🔥 Severity
+      description: How severe is this bug?
+      options:
+        - Low - Minor inconvenience
+        - Medium - Affects functionality but has workaround
+        - High - Major functionality broken
+        - Critical - System unusable or data loss
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: 🎯 Component
+      description: Which part of the application is affected?
+      options:
+        - Frontend (React/UI)
+        - Backend (FastAPI/Server)
+        - Database (MongoDB)
+        - Fine-tuning (Training)
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: 🖥️ Environment
+      description: Please provide your environment details
+      placeholder: |
+        - OS: [e.g., Ubuntu 22.04, macOS 13.0, Windows 11]
+        - Node.js version: [e.g., 18.17.0]
+        - Python version: [e.g., 3.9.7]
+        - Browser (if frontend issue): [e.g., Chrome 120, Firefox 121]
+      value: |
+        - OS: 
+        - Node.js version: 
+        - Python version: 
+        - Browser: 
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: 📋 Logs/Error Messages
+      description: Please paste any relevant logs or error messages
+      placeholder: Paste logs here...
+      render: shell
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: 📸 Screenshots
+      description: If applicable, add screenshots to help explain the problem
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: 📎 Additional Context
+      description: Add any other context about the problem here
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: ✔️ Checklist
+      description: Please confirm the following
+      options:
+        - label: I have searched existing issues to ensure this is not a duplicate
+          required: true
+        - label: I have provided all the required information above
+          required: true
+        - label: I am using the latest version of the project
+          required: false
